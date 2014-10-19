@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_musiclib" default="compile.module.musiclib">
+  <dirname property="module.musiclib.basedir" file="${ant.file.module_musiclib}"/>
+  
+  <property name="module.jdk.home.musiclib" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.musiclib" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.musiclib" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.musiclib" value="${compiler.args}"/>
+  
+  <property name="musiclib.output.dir" value="${module.musiclib.basedir}/out/production/MusicLib"/>
+  <property name="musiclib.testoutput.dir" value="${module.musiclib.basedir}/out/test/MusicLib"/>
+  
+  <path id="musiclib.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="musiclib.module.production.classpath">
+    <path refid="${module.jdk.classpath.musiclib}"/>
+    <path refid="library.google-gson-2.2.classpath"/>
+    <path refid="library.jaudiotagger-2.2.0.classpath"/>
+    <path refid="library.jersey-2.2.classpath"/>
+    <path refid="library.google_guava.classpath"/>
+  </path>
+  
+  <path id="musiclib.runtime.production.module.classpath">
+    <pathelement location="${musiclib.output.dir}"/>
+    <path refid="library.google-gson-2.2.classpath"/>
+    <path refid="library.jaudiotagger-2.2.0.classpath"/>
+    <path refid="library.jersey-2.2.classpath"/>
+    <path refid="library.google_guava.classpath"/>
+  </path>
+  
+  <path id="musiclib.module.classpath">
+    <path refid="${module.jdk.classpath.musiclib}"/>
+    <pathelement location="${musiclib.output.dir}"/>
+    <path refid="library.google-gson-2.2.classpath"/>
+    <path refid="library.jaudiotagger-2.2.0.classpath"/>
+    <path refid="library.jersey-2.2.classpath"/>
+    <path refid="library.google_guava.classpath"/>
+  </path>
+  
+  <path id="musiclib.runtime.module.classpath">
+    <pathelement location="${musiclib.testoutput.dir}"/>
+    <pathelement location="${musiclib.output.dir}"/>
+    <path refid="library.google-gson-2.2.classpath"/>
+    <path refid="library.jaudiotagger-2.2.0.classpath"/>
+    <path refid="library.jersey-2.2.classpath"/>
+    <path refid="library.google_guava.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.musiclib">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.musiclib">
+    <patternset refid="excluded.from.module.musiclib"/>
+  </patternset>
+  
+  <path id="musiclib.module.sourcepath">
+    <dirset dir="${module.musiclib.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.musiclib" depends="compile.module.musiclib.production,compile.module.musiclib.tests" description="Compile module MusicLib"/>
+  
+  <target name="compile.module.musiclib.production" depends="register.custom.compilers" description="Compile module MusicLib; production classes">
+    <mkdir dir="${musiclib.output.dir}"/>
+    <javac2 destdir="${musiclib.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.musiclib}/javac">
+      <compilerarg line="${compiler.args.musiclib}"/>
+      <bootclasspath refid="musiclib.module.bootclasspath"/>
+      <classpath refid="musiclib.module.production.classpath"/>
+      <src refid="musiclib.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.musiclib"/>
+    </javac2>
+    
+    <copy todir="${musiclib.output.dir}">
+      <fileset dir="${module.musiclib.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.musiclib.tests" depends="register.custom.compilers,compile.module.musiclib.production" description="compile module MusicLib; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.musiclib" description="cleanup module">
+    <delete dir="${musiclib.output.dir}"/>
+    <delete dir="${musiclib.testoutput.dir}"/>
+  </target>
+</project>
