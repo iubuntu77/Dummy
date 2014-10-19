@@ -1,5 +1,8 @@
 package musiclib.audio;
 
+import com.google.common.collect.HashBasedTable;
+
+import org.apache.commons.io.FileUtils;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileFilter;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -7,20 +10,23 @@ import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.audio.mp3.MP3File;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
+import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
-import static org.apache.commons.io.FileUtils.iterateFiles;
+import java.util.*;
 
 /**
- * Created by priyanshu on 4/3/14.
+ * @version 0.1
+ * @author priyanshu
  */
 public class AudioMetaProcessor {
+
+    public static String MEDIA_MUSIC = "/Users/priyanshu/Music/iTunes/iTunes Media/Music/";
+    public static String[] MUSIC_FORMATS = {"mp3", "mp4", "wma","ogg"};
 
     public static void main(String[] args) {
 
@@ -29,80 +35,97 @@ public class AudioMetaProcessor {
     }
 
     public static void readMetaDate() {
-        AudioFile f;
+        AudioFile audioFile = null;
 
-        try {
+            File musicFolder = new File(MEDIA_MUSIC);
+            Iterator<File> fileFilter = FileUtils.iterateFiles(musicFolder, MUSIC_FORMATS, true);
 
-            String[] formats = null ;// {"mp3", "mp4", "wma"};
-
-            //   fd = new FileUtils("/Users/priyanshu/Music/iTunes/iTunes Media/Music/");
-            File fd = new File("/Users/priyanshu/Music/iTunes/iTunes Media/Music/");
-            Iterator<File> fi = iterateFiles(fd, formats, true);
+            HashBasedTable<String, String, String> musicTable = HashBasedTable.create();
 
             Set<String> ft = new HashSet<String>();
-            int c = 0,s=0;
+            Set<String> nonmp3 = new HashSet<String>();
+            int c = 0,s=0,d=0;
 
-            AudioFileFilter af = new AudioFileFilter(true);
-            File t;
-            while (fi.hasNext()) {
-                t = fi.next();
-                if (af.accept(t)) {
+            AudioFileFilter audioFileFilter = new AudioFileFilter(true);
+            File musicFile;
+            MP3File mp3File=null;
+
+            while (fileFilter.hasNext()) {
+                musicFile = fileFilter.next();
+                if (audioFileFilter.accept(musicFile)) {
                     ++c;
-                    f = AudioFileIO.read(t);
-                    ft.add(f.getAudioHeader().getFormat());
+                    try {
+                        audioFile = AudioFileIO.read(musicFile);
+                    } catch (CannotReadException e) {
+                        System.out.println("error while reading " + musicFile.getName());
+                        e.printStackTrace();
+                    } catch (ReadOnlyFileException e) {
+                        e.printStackTrace();
+                    } catch (TagException e) {
+                        e.printStackTrace();
+                    } catch (InvalidAudioFrameException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    ft.add(audioFile.getAudioHeader().getFormat());
+
+                    if (audioFile instanceof MP3File) {
+                        mp3File = (MP3File) audioFile;
+                        if (!mp3File.hasID3v2Tag()) {
+                            ++d;
+                        }
+                    } else {
+                        nonmp3.add(musicFile.getName());
+                    }
+
+
+                    //System.out.println(musicFile.getName() + "::" + mp3File.hasID3v2Tag());
+
+                   if (mp3File.hasID3v2Tag()) {
+
+                        AbstractID3v2Tag v2 = mp3File.getID3v2TagAsv24();
+
+                       musicTable.put(musicFile.getName(),"artist", v2.getFirst(FieldKey.ARTIST));
+                       musicTable.put(musicFile.getName(),"album", v2.getFirst(FieldKey.ALBUM));
+                       musicTable.put(musicFile.getName(),"title", v2.getFirst(FieldKey.TITLE));
+                       musicTable.put(musicFile.getName(),"composer", v2.getFirst(FieldKey.COMPOSER));
+                       musicTable.put(musicFile.getName(),"album artist", v2.getFirst(FieldKey.ALBUM_ARTIST));
+
+
+                       /* System.out.println("artist:" + v2.getFirst(FieldKey.ARTIST));
+                        System.out.println("album:" + v2.getFirst(FieldKey.ALBUM));
+                        System.out.println("title:" + v2.getFirst(FieldKey.TITLE));
+                        System.out.println("composer:" + v2.getFirst(FieldKey.COMPOSER));
+                        System.out.println("album artist " + v2.getFirst(FieldKey.ALBUM_ARTIST));*/
+
+                    } else {
+
+                        Tag tag = audioFile.getTag();
+
+                       musicTable.put(musicFile.getName(),"artist", tag.getFirst(FieldKey.ARTIST));
+                       musicTable.put(musicFile.getName(),"album", tag.getFirst(FieldKey.ALBUM));
+                       musicTable.put(musicFile.getName(),"title", tag.getFirst(FieldKey.TITLE));
+                       musicTable.put(musicFile.getName(),"composer", tag.getFirst(FieldKey.COMPOSER));
+                       musicTable.put(musicFile.getName(),"album artist", tag.getFirst(FieldKey.ALBUM_ARTIST));
+
+                       /* System.out.println("artist :" + tag.getFirst(FieldKey.ARTIST));
+                        System.out.println("album " + tag.getFirst(FieldKey.ALBUM));
+                        System.out.println("title " + tag.getFirst(FieldKey.TITLE));
+                        System.out.println("composer " + tag.getFirst(FieldKey.COMPOSER));
+                        System.out.println("album artist " + tag.getFirst(FieldKey.ALBUM_ARTIST));*/
+
+                    }
 
                 }
             }
 
-            System.out.println(" file count " + c + " non-mp3 files " + s);
+        System.out.println(musicTable.cellSet().size()/4);
 
-            System.out.println("music formats  " + ft.size() + " " + ft.toString());
+            System.out.println(" file count " + c + " non-ID3 tags " + d);
+            System.out.println("music MUSIC_FORMATS  " + ft.size() + " " + ft.toString());
+            System.out.println(" non mp3  " + nonmp3);
 
-           /*  if (fd.isDirectory()) for (File fx : fd.listFiles()) {
-
-                f = AudioFileIO.read(fx);
-                System.out.println(f.getAudioHeader().getFormat());
-
-
-                MP3File m = (MP3File) f;
-                System.out.println(m.hasID3v2Tag());
-                if(m.hasID3v2Tag())
-                {
-                    AbstractID3v2Tag v2 = m.getID3v2TagAsv24();
-                    System.out.println("artist :" + v2.getFirst(FieldKey.ARTIST));
-                    System.out.println("album " + v2.getFirst(FieldKey.ALBUM));
-                    System.out.println("title " + v2.getFirst(FieldKey.TITLE));
-                    System.out.println("comment " + v2.getFirst(FieldKey.COMMENT));
-                    System.out.println("year " + v2.getFirst(FieldKey.YEAR));
-                    System.out.println("track " + v2.getFirst(FieldKey.TRACK));
-                    System.out.println("disc_no " + v2.getFirst(FieldKey.DISC_NO));
-                    System.out.println("composer " + v2.getFirst(FieldKey.COMPOSER));
-                    System.out.println("artist_sort " + v2.getFirst(FieldKey.ARTIST_SORT));
-                }
-               Tag tag = f.getTag();
-                System.out.println("artist :" + tag.getFirst(FieldKey.ARTIST));
-                System.out.println("album " + tag.getFirst(FieldKey.ALBUM));
-                System.out.println("title " + tag.getFirst(FieldKey.TITLE));
-                System.out.println("comment " + tag.getFirst(FieldKey.COMMENT));
-                System.out.println("year " + tag.getFirst(FieldKey.YEAR));
-                System.out.println("track " + tag.getFirst(FieldKey.TRACK));
-                System.out.println("disc_no " + tag.getFirst(FieldKey.DISC_NO));
-                System.out.println("composer " + tag.getFirst(FieldKey.COMPOSER));
-                System.out.println("artist_sort " + tag.getFirst(FieldKey.ARTIST_SORT));
-
-
-            } */
-        } catch (CannotReadException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TagException e) {
-            e.printStackTrace();
-        } catch (ReadOnlyFileException e) {
-            e.printStackTrace();
-        } catch (InvalidAudioFrameException e) {
-            e.printStackTrace();
-        }
     }
 
 
