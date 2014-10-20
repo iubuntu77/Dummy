@@ -4,10 +4,7 @@
       <root url="file://$USER_HOME$/Downloads/google-gson-2.2.2" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES>
-      <root url="file://$USER_HOME$/Downloads/google-gson-2.2.2" />
-    </SOURCES>
+    <SOURCES />
     <jarDirectory url="file://$USER_HOME$/Downloads/google-gson-2.2.2" recursive="false" />
-    <jarDirectory url="file://$USER_HOME$/Downloads/google-gson-2.2.2" recursive="false" type="SOURCES" />
   </library>
 </component>

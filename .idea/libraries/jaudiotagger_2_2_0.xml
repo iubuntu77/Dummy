@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="jaudiotagger-2.2.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/jaudiotagger-2.2.2.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/apache-solr-3.6.0/dist/solrj-lib/commons-io-2.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/Downloads/jaudiotagger-2.2.2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES />
+  </library>
+</component>
