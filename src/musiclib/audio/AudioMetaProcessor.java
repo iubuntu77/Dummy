@@ -92,29 +92,16 @@ public class AudioMetaProcessor {
                        musicTable.put(musicFile.getName(),"composer", v2.getFirst(FieldKey.COMPOSER));
                        musicTable.put(musicFile.getName(),"album artist", v2.getFirst(FieldKey.ALBUM_ARTIST));
 
-
-                       /* System.out.println("artist:" + v2.getFirst(FieldKey.ARTIST));
-                        System.out.println("album:" + v2.getFirst(FieldKey.ALBUM));
-                        System.out.println("title:" + v2.getFirst(FieldKey.TITLE));
-                        System.out.println("composer:" + v2.getFirst(FieldKey.COMPOSER));
-                        System.out.println("album artist " + v2.getFirst(FieldKey.ALBUM_ARTIST));*/
-
                     } else {
 
                         Tag tag = audioFile.getTag();
 
-                       musicTable.put(musicFile.getName(),"artist", tag.getFirst(FieldKey.ARTIST));
-                       musicTable.put(musicFile.getName(),"album", tag.getFirst(FieldKey.ALBUM));
-                       musicTable.put(musicFile.getName(),"title", tag.getFirst(FieldKey.TITLE));
-                       musicTable.put(musicFile.getName(),"composer", tag.getFirst(FieldKey.COMPOSER));
-                       musicTable.put(musicFile.getName(),"album artist", tag.getFirst(FieldKey.ALBUM_ARTIST));
-
-                       /* System.out.println("artist :" + tag.getFirst(FieldKey.ARTIST));
-                        System.out.println("album " + tag.getFirst(FieldKey.ALBUM));
-                        System.out.println("title " + tag.getFirst(FieldKey.TITLE));
-                        System.out.println("composer " + tag.getFirst(FieldKey.COMPOSER));
-                        System.out.println("album artist " + tag.getFirst(FieldKey.ALBUM_ARTIST));*/
-
+                       musicTable.put(musicFile.getName(),FieldKey.ARTIST.toString(), tag.getFirst(FieldKey.ARTIST));
+                       musicTable.put(musicFile.getName(),FieldKey.ALBUM.toString(), tag.getFirst(FieldKey.ALBUM));
+                       musicTable.put(musicFile.getName(),FieldKey.TITLE.toString(), tag.getFirst(FieldKey.TITLE));
+                       musicTable.put(musicFile.getName(),FieldKey.COMPOSER.toString(), tag.getFirst(FieldKey.COMPOSER));
+                       musicTable.put(musicFile.getName(),FieldKey.ALBUM_ARTIST.toString(), tag.getFirst(FieldKey.ALBUM_ARTIST));
+                       
                     }
 
                 }
